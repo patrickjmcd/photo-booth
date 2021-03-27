@@ -5,9 +5,13 @@ import cv2
 import time
 import os
 import cups
+from PIL import Image
 
 captured = []
-PATH = "/tmp"
+PATH = "/tmp/photo-booth"
+
+if not os.path.exists(PATH):
+    os.makedirs(PATH)
 
 face_cascade = cv2.CascadeClassifier(
     'haarcascades/haarcascade_frontalface_default.xml')
@@ -37,10 +41,14 @@ def detect(gray, frame):
 
 def print_photo(filename):
     conn = cups.Connection()
-    print_id = conn.printFile('MITSUBISHI_CP9550DZ',
-                              filename, "Photo Booth", {})
-    while conn.getJobs().get(print_id, None):
-        time.sleep(1)
+    printers = conn.getPrinters()
+    if 'MITSUBISHI_CP9550DZ' in printers.keys():
+        print_id = conn.printFile('MITSUBISHI_CP9550DZ',
+                                  filename, "Photo Booth", {})
+        while conn.getJobs().get(print_id, None):
+            time.sleep(1)
+    else:
+        print("No photo printer attached")
 
 
 def make_photo_strip():
@@ -53,19 +61,24 @@ def make_photo_strip():
     template_image = cv2.imread("Template.png")
     for i in range(0, len(captured)):
         s_img = cv2.imread(captured[i])
-        resized = cv2.resize(s_img, (width, height))
+        resized = cv2.resize(s_img, (width, height),
+                             interpolation=cv2.INTER_AREA)
 
         y = border_y + (margin_y + height) * i
 
         template_image[y:y+height,
                        border_x:border_x+width] = resized
 
-    img_name = "../output/strip_{}.png".format(int(time.time()))
-    file_name = os.path.join(os.getcwd(), img_name)
-    cv2.imwrite(file_name,
-                cv2.hconcat([template_image, template_image]))
+    img_name = "{}/strip_{}.png".format(PATH, int(time.time()))
+    photo_image = cv2.hconcat([template_image, template_image])
+    converted_image = cv2.cvtColor(photo_image, cv2.COLOR_BGR2RGB)
+    PILimage = Image.fromarray(converted_image)
+    PILimage.save(img_name, dpi=(300, 300))
+
+    # cv2.imwrite(img_name,
+    # cv2.hconcat([template_image, template_image]))
     print("{} written!".format(img_name))
-    print_photo(file_name)
+    print_photo(img_name)
 
 
 video_capture = cv2.VideoCapture(0)
@@ -82,12 +95,11 @@ while True:
         break
     elif k % 256 == 32:
         # SPACE pressed
-        img_name = "../output/opencv_frame_{}.png".format(int(time.time()))
-        output_path = os.path.join(os.getcwd(), img_name)
-        cv2.imwrite(output_path, roi)
-        print("{} written!".format(output_path))
+        img_name = "{}/opencv_frame_{}.png".format(PATH, int(time.time()))
+        cv2.imwrite(img_name, roi)
+        print("{} written!".format(img_name))
 
-        captured.append(output_path)
+        captured.append(img_name)
         if len(captured) == 4:
             make_photo_strip()
             break
