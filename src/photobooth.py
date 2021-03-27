@@ -4,6 +4,7 @@
 import cv2
 import time
 import os
+import cups
 
 captured = []
 PATH = "/tmp"
@@ -34,6 +35,14 @@ def detect(gray, frame):
     return frame
 
 
+def print_photo(filename):
+    conn = cups.Connection()
+    print_id = conn.printFile('MITSUBISHI_CP9550DZ',
+                              filename, "Photo Booth", {})
+    while conn.getJobs().get(print_id, None):
+        time.sleep(1)
+
+
 def make_photo_strip():
     border_x = 30  # 30 px border
     border_y = 30
@@ -52,8 +61,11 @@ def make_photo_strip():
                        border_x:border_x+width] = resized
 
     img_name = "../output/strip_{}.png".format(int(time.time()))
-    cv2.imwrite(os.path.join(os.getcwd(), img_name), template_image)
+    file_name = os.path.join(os.getcwd(), img_name)
+    cv2.imwrite(file_name,
+                cv2.hconcat([template_image, template_image]))
     print("{} written!".format(img_name))
+    print_photo(file_name)
 
 
 video_capture = cv2.VideoCapture(0)
