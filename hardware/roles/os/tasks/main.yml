@@ -1,0 +1,51 @@
+
+- name: Upgrade all apt packages
+  apt: 
+    update_cache: yes
+    upgrade: dist 
+  tags:
+    - upgrade
+
+- name: Install cmake
+  apt: 
+    name: cmake
+  tags:
+    - install
+
+- name: Install git
+  apt: 
+    name: git
+  tags:
+    - install
+
+- name: Install gcc
+  apt: 
+    name: gcc
+  tags:
+    - install
+
+- name: Check if a reboot is needed for Debian and Ubuntu boxes
+  register: reboot_required_file
+  stat: 
+    path: /var/run/reboot-required 
+    get_md5: no
+  tags:
+    - check_reboot
+
+- name: Reboot the Debian or Ubuntu server
+  reboot:
+    msg: "Reboot initiated by Ansible due to kernel updates"
+    connect_timeout: 5
+    reboot_timeout: 300
+    pre_reboot_delay: 0
+    post_reboot_delay: 30
+    test_command: uptime
+  when: reboot_required_file.stat.exists
+
+- name: Clone v4l2rtspserver
+  ansible.builtin.git:
+    repo: 'https://github.com/mpromonet/v4l2rtspserver.git'
+    dest: /opt/v4l2rtspserver
+
+- name: build v4l2rtspserver
+  ansible.builtin.shell: 'cd /opt/v4l2rtspserver && cmake . && make && make install'

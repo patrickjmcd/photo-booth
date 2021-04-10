@@ -1,0 +1,4 @@
+pycups
+opencv-python
+Pillow
+redis

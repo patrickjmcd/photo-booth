@@ -1,3 +1,0 @@
-pycups
-python-opencv
-Pillow

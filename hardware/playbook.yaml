@@ -1,0 +1,19 @@
+#! /usr/bin/env ansible-playbook -i inventory --tags os,apps
+---
+
+- name: setup os
+  hosts: photobooth
+  gather_facts: yes
+  become: yes
+  roles:
+      - { role: os }
+  tags:
+      - os
+
+# - name: setup apps
+#   hosts: photobooth
+#   gather_facts: true
+#   roles:
+#       - { role: apps }
+#   tags:
+#       - apps

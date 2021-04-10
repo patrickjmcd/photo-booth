@@ -1,0 +1,13 @@
+[photobooth]
+photobooth ansible_host=192.168.1.30
+
+[photobooth:vars]
+ansible_ssh_user=ubuntu
+ansible_python_interpreter="/usr/bin/python3"
+
+[localhost]
+thispc ansible_host=127.0.0.1 ansible_python_interpreter=/usr/bin/python3
+
+[localhost:vars]
+ansible_python_interpreter="/usr/bin/python3"
+ansible_connection=local
