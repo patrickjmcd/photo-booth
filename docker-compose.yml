@@ -2,15 +2,20 @@ version: "3"
 
 services:
     camera:
+        build: ./camera
         image: photobooth-camera
+        container_name: photobooth-camera
         environment:
             - REDIS_HOST=redis
         links:
             - redis
         devices:
             - "/dev/video0:/dev/video0"
+        
     web-server:
+        build: web
         image: photobooth-web
+        container_name: photobooth-web
         ports:
             - "8000:80"
         environment:
