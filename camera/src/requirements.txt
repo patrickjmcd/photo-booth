@@ -1,4 +1,4 @@
 pycups
-opencv-python
+opencv-python-headless
 Pillow
 redis

@@ -144,33 +144,36 @@ class PhotoBooth():
         self.session_captured = []
 
         video_capture = cv2.VideoCapture(self.camera)
+
         while True:
             # Captures video_capture frame by frame
-            _, frame = video_capture.read()
-            (x, y, w, h) = (0, 0, 960, 720)
-            roi = cv2.flip(frame[y:y+h, x:x+w], 1)
+            video_ok, frame = video_capture.read()
+            if video_ok:
+                (x, y, w, h) = (0, 0, 960, 720)
+                roi = cv2.flip(frame[y:y+h, x:x+w], 1)
 
-            k = cv2.waitKey(1)
-            if k % 256 == 27:
-                # ESC pressed
-                print("Escape hit, closing...")
-                break
-            elif k % 256 == 32 or int(r.get("snap")) == 1:
-                # SPACE pressed
-                self.snap(roi)
+                k = cv2.waitKey(1)
+                if k % 256 == 27:
+                    # ESC pressed
+                    print("Escape hit, closing...")
+                    break
+                elif k % 256 == 32 or int(r.get("snap")) == 1:
+                    # SPACE pressed
+                    self.snap(roi)
 
-            if int(r.get("clear")) == 1:
-                self.clear_current()
+                if int(r.get("clear")) == 1:
+                    self.clear_current()
 
-            # capture image in monochrome
-            gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-            canvas = self.detect(gray, roi)  # detect faces
-            canvas = self.counter_overlay(canvas)
-            self.stream(canvas)
+                # capture image in monochrome
+                gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+                canvas = self.detect(gray, roi)  # detect faces
+                canvas = self.counter_overlay(canvas)
+                self.stream(canvas)
 
-            # Displays the result on camera feed
-            # cv2.imshow('Photo Booth', canvas)
-
+                # Displays the result on camera feed
+                # cv2.imshow('Photo Booth', canvas)
+            else:
+                print("camera not ready")
         # Release the capture once all the processing is done.
         video_capture.release()
         cv2.destroyAllWindows()
