@@ -3,7 +3,7 @@ import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
 import CardMedia from "@material-ui/core/CardMedia";
 
-function LivePhoto({ getData }) {
+function LivePhoto({ getData, clearData }) {
     const [imgSrc, setImgSrc] = useState("");
     const webSocket = useRef(null);
 
@@ -28,7 +28,9 @@ function LivePhoto({ getData }) {
 
     const snap = () => {
         fetch("http://localhost:8000/snap", { method: "POST" });
-        getData();
+        setTimeout(() => {
+            getData();
+        }, 500);
     };
 
     return (
@@ -41,8 +43,13 @@ function LivePhoto({ getData }) {
                     title="Photo Booth"
                 />
             </Card>
+
             <Button onClick={snap} variant="contained" color="primary">
                 Snap a Pic!
+            </Button>
+
+            <Button onClick={clearData} variant="contained" color="secondary">
+                Clear current photo strip
             </Button>
         </div>
     );

@@ -8,7 +8,7 @@ import redis
 
 from PIL import Image
 
-r = redis.Redis()
+r = redis.Redis(host=os.getenv('REDIS_HOST', 'localhost'))
 
 
 class PhotoBooth():
@@ -18,6 +18,7 @@ class PhotoBooth():
         # initialize Redis values
         r.set("photoStorageLocation", file_path)
         r.set("snap", 0)
+        r.set("clear", 0)
         r.set("currentCounter", 0)
 
         self.session_captured = []
@@ -110,6 +111,12 @@ class PhotoBooth():
             self.session_captured = []
             r.delete("sessionCaptured")
 
+    def clear_current(self):
+        """Clear the current photo strip from the redis database"""
+        r.set("clear", 0)
+        r.delete("sessionCaptured")
+        self.session_captured = []
+
     def stream(self, frame):
         """Stream the photo through redis"""
         _, image = cv2.imencode('.jpg', frame)
@@ -118,11 +125,13 @@ class PhotoBooth():
         image_id = os.urandom(4)
         r.set('image_id', image_id)
 
-    def counter_overlay(self, frame, counter):
+    def counter_overlay(self, frame):
         counter_stored_value = r.get("currentCounter").decode('utf-8')
-        if counter != int(counter_stored_value):
-            r.set("currentCounter", counter)
-        counter_text = "{}/{}".format(counter+1, self.photos_per_session)
+        captured_length = len(self.session_captured)
+        if int(counter_stored_value) != captured_length:
+            r.set("currentCounter", captured_length)
+        counter_text = "{}/{}".format(captured_length+1,
+                                      self.photos_per_session)
         cv2.putText(frame, counter_text,
                     (10, 25),
                     cv2.FONT_HERSHEY_SIMPLEX,
@@ -150,10 +159,13 @@ class PhotoBooth():
                 # SPACE pressed
                 self.snap(roi)
 
+            if int(r.get("clear")) == 1:
+                self.clear_current()
+
             # capture image in monochrome
             gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
             canvas = self.detect(gray, roi)  # detect faces
-            canvas = self.counter_overlay(canvas, len(self.session_captured))
+            canvas = self.counter_overlay(canvas)
             self.stream(canvas)
 
             # Displays the result on camera feed

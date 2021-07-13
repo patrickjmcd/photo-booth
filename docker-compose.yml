@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+    camera:
+        image: photobooth-camera
+        environment:
+            - REDIS_HOST=redis
+        links:
+            - redis
+        devices:
+            - "/dev/video0:/dev/video0"
+    web-server:
+        image: photobooth-web
+        ports:
+            - "8000:80"
+        environment:
+            - REDIS_HOST=redis
+        links:
+            - redis
+        volumes:
+            - photos:/photos
+    redis:
+        image: redis
+        ports:
+            - "6379:6379"
+    # nginx:
+
+volumes:
+    photos:

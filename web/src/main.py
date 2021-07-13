@@ -7,11 +7,12 @@ from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 
 import redis
+import os
 import time
 import json
 import base64
 
-r = redis.Redis(host='192.168.1.131')
+r = redis.Redis(host=os.getenv('REDIS_HOST', 'localhost'))
 r.set("startupTime", time.time())
 photo_storage = r.get("photoStorageLocation").decode('utf-8')
 
@@ -44,6 +45,11 @@ async def snap(request):
     return JSONResponse({"snap": 1})
 
 
+async def clear_current_capture(request):
+    r.set("clear", 1)
+    return JSONResponse({"clear": 1})
+
+
 async def websocket_endpoint(websocket):
     await websocket.accept()
     # Process incoming messages
@@ -71,6 +77,9 @@ app = Starlette(debug=True, routes=[
     WebSocketRoute('/ws', websocket_endpoint),
     Route('/snap', snap, methods=['POST']),
     Route('/data', data),
+    Route('/clear', clear_current_capture, methods=['POST']),
     Mount("/images", app=StaticFiles(directory=photo_storage), name="images"),
     Mount('/', app=StaticFiles(directory='.', html=True), name="index"),
 ], middleware=middleware)
+
+print("test")

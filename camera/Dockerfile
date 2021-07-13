@@ -29,4 +29,4 @@ ADD src /opt/app
 
 RUN pip install -r requirements.txt
 
-CMD [ "/usr/bin/python3", "main.py"]
+CMD [ "python", "main.py"]
