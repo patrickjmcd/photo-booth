@@ -13,11 +13,11 @@ services:
             - "/dev/video0:/dev/video0"
         
     web-server:
-        build: web
+        build: ./web
         image: photobooth-web
         container_name: photobooth-web
         ports:
-            - "8000:80"
+            - 8000:80
         environment:
             - REDIS_HOST=redis
         links:
@@ -27,8 +27,14 @@ services:
     redis:
         image: redis
         ports:
-            - "6379:6379"
-    # nginx:
+            - 6379:6379
+    app:
+        image: photobooth-app
+        build:
+            context: ./app
+            dockerfile: Dockerfile.prod
+        ports:
+            - 1337:80
 
 volumes:
     photos:
