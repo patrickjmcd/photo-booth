@@ -18,9 +18,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dockerbuild:dev": "docker build -t photobooth-app:dev .",
-    "dockerbuildx:dev": "docker buildx build --push --platform linux/arm/v7,linux/arm64/v8,linux/amd64 --tag patrickjmcd/photobooth-app:dev .",
-    "dockerrun:dev": "docker run -it --rm -v ${PWD}:/app -v /app/node_modules -p 3001:3000 -e CHOKIDAR_USEPOLLING=true photobooth-app:dev"
+    "docker:build:dev": "docker build -t photobooth-app:dev .",
+    "docker:buildx:dev": "docker buildx build --push --platform linux/arm/v7,linux/arm64/v8,linux/amd64 --tag patrickjmcd/photobooth-app:dev .",
+    "docker:run:dev": "docker run -it --rm -v ${PWD}:/app -v /app/node_modules -p 3001:3000 -e CHOKIDAR_USEPOLLING=true photobooth-app:dev"
   },
   "eslintConfig": {
     "extends": [
