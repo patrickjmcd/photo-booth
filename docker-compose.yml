@@ -11,7 +11,7 @@ services:
             - redis
         devices:
             - "/dev/video0:/dev/video0"
-        
+
     web-server:
         build: ./web
         image: photobooth-web

@@ -2,10 +2,11 @@ FROM node as build
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 COPY package.json ./
-COPY yarn.lock ./
-RUN yarn
+# COPY package-lock.json ./
+RUN npm ci --silent
+RUN npm install
 COPY . ./
-RUN yarn build
+RUN npm run build
 
 # production environment
 FROM nginx:stable-alpine
