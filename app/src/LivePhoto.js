@@ -10,7 +10,8 @@ function LivePhoto({ getData, clearData }) {
     useEffect(() => {
         const ws_path =
             // "ws://" + window.location.host + window.location.pathname + "ws";
-            "ws://localhost:8000/ws";
+            // `ws://localhost:8000/ws`;
+            `${process.env.REACT_APP_WS_URL}/ws`;
         webSocket.current = new WebSocket(ws_path);
         webSocket.current.onopen = () => {
             webSocket.current.send(1);
@@ -27,7 +28,7 @@ function LivePhoto({ getData, clearData }) {
     }, []);
 
     const snap = () => {
-        fetch("http://localhost:8000/snap", { method: "POST" });
+        fetch(`${process.env.REACT_APP_API_URL}/snap`, { method: "POST" });
         setTimeout(() => {
             getData();
         }, 500);

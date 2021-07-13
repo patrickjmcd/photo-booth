@@ -46,7 +46,7 @@ const App = () => {
 
     const fetchData = async () => {
         try {
-            let response = await fetch("http://localhost:8000/data");
+            let response = await fetch(`${process.env.REACT_APP_API_URL}/data`);
             response = await response.json();
             setSessionPhotos(response.currentCapture);
         } catch (e) {
@@ -56,7 +56,7 @@ const App = () => {
 
     const clearCapture = async () => {
         try {
-            fetch("http://localhost:8000/clear", { method: "POST" });
+            fetch(`${process.env.REACT_APP_API_URL}/clear`, { method: "POST" });
             setTimeout(() => {
                 fetchData();
             }, 500);

@@ -169,7 +169,7 @@ class PhotoBooth():
             self.stream(canvas)
 
             # Displays the result on camera feed
-            cv2.imshow('Photo Booth', canvas)
+            # cv2.imshow('Photo Booth', canvas)
 
         # Release the capture once all the processing is done.
         video_capture.release()

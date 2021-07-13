@@ -1,5 +1,6 @@
 # pull official base image
 FROM node
+EXPOSE 3000
 
 # set working directory
 WORKDIR /app
@@ -9,8 +10,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 
 # install app dependencies
 COPY package.json ./
-COPY yarn.lock ./
-RUN npm install
+RUN yarn
 
 # add app
 COPY . ./

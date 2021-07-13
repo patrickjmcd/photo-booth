@@ -10,7 +10,7 @@ const PhotoStrip = ({ photos }) => {
                     <CardMedia
                         component="img"
                         alt="photobooth pic"
-                        image={`http://localhost:8000/images/${p}`}
+                        image={`${process.env.REACT_APP_API_URL}/images/${p}`}
                         title={p}
                     />
                 </Card>
