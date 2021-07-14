@@ -3,7 +3,7 @@ import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
 import CardMedia from "@material-ui/core/CardMedia";
 
-function LivePhoto({ getData, clearData }) {
+function LivePhoto({ getData }) {
     const [imgSrc, setImgSrc] = useState("");
     const webSocket = useRef(null);
 
@@ -42,15 +42,17 @@ function LivePhoto({ getData, clearData }) {
                     alt="live camera view"
                     image={imgSrc}
                     title="Photo Booth"
+                    style={{ "max-height": "700px", objectFit: "cover" }}
                 />
             </Card>
 
-            <Button onClick={snap} variant="contained" color="primary">
+            <Button
+                onClick={snap}
+                variant="contained"
+                color="primary"
+                style={{ marginTop: "10px" }}
+            >
                 Snap a Pic!
-            </Button>
-
-            <Button onClick={clearData} variant="contained" color="secondary">
-                Clear current photo strip
             </Button>
         </div>
     );

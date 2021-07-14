@@ -1,11 +1,19 @@
 import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
+import Button from "@material-ui/core/Button";
 import CardMedia from "@material-ui/core/CardMedia";
 
-const PhotoStrip = ({ photos }) => {
+const reprintStrip = (filename) => {
+    fetch(`${process.env.REACT_APP_API_URL}/reprint`, {
+        method: "POST",
+        body: JSON.stringify({ filename }),
+    });
+};
+
+const PhotoStrips = ({ photos }) => {
     const photoImages = photos.map((p) => {
         return (
-            <Grid item xs={12} key={p.id}>
+            <Grid item md={2} xs={12} key={p.id}>
                 <Card key={p}>
                     <CardMedia
                         component="img"
@@ -13,6 +21,14 @@ const PhotoStrip = ({ photos }) => {
                         image={`${process.env.REACT_APP_API_URL}/images/${p}`}
                         title={p}
                     />
+                    <Button
+                        onClick={() => reprintStrip(p)}
+                        variant="contained"
+                        color="Primary"
+                        style={{ marginBottom: "10px" }}
+                    >
+                        Re-Print
+                    </Button>
                 </Card>
             </Grid>
         );
@@ -24,4 +40,4 @@ const PhotoStrip = ({ photos }) => {
     );
 };
 
-export default PhotoStrip;
+export default PhotoStrips;

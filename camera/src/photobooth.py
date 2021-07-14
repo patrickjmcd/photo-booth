@@ -7,20 +7,15 @@ import numpy as np
 import redis
 
 from PIL import Image
-
-r = redis.Redis(host=os.getenv('REDIS_HOST', 'localhost'))
+from os import listdir
+from os.path import isfile, join
 
 
 class PhotoBooth():
 
     def __init__(self, file_path="/tmp/photo-booth", printer_name="MITSUBISHI_CP9550DZ", photos_per_session=4, camera=0):
 
-        # initialize Redis values
-        r.set("photoStorageLocation", file_path)
-        r.set("snap", 0)
-        r.set("clear", 0)
-        r.set("currentCounter", 0)
-
+        self.startup_time = time.time()
         self.session_captured = []
         self.file_path = file_path
         self.printer_name = printer_name
@@ -36,6 +31,13 @@ class PhotoBooth():
         self.smile_cascade = cv2.CascadeClassifier(
             'haarcascades/haarcascade_smile.xml')
 
+        files_already_in_folder = [f for f in listdir(
+            file_path) if isfile(join(file_path, f))]
+        self.all_captured = [f for f in files_already_in_folder if f.endswith(
+            ".png") and f.startswith("opencv_frame_")]
+        self.all_strips = [f for f in files_already_in_folder if f.endswith(
+            ".png") and f.startswith("strip_")]
+
     def print_photo(self, filename):
         conn = cups.Connection()
         printers = conn.getPrinters()
@@ -46,6 +48,12 @@ class PhotoBooth():
                 time.sleep(1)
         else:
             print("Printer {} not attached".format(self.printer_name))
+
+    def print_strip_by_name(self, strip_name):
+        """Print a photo strip by name"""
+        img_name = "{}/{}".format(self.file_path, strip_name)
+        self.print_photo(img_name)
+        return True
 
     def detect(self, gray, frame):
 
@@ -90,46 +98,36 @@ class PhotoBooth():
         img_file = "{}/{}".format(self.file_path, img_name)
         PILimage.save(img_file, dpi=(self.file_dpi, self.file_dpi))
 
-        r.rpush("allStrips", img_name)
+        self.all_strips.append(img_name)
         print("{} written!".format(img_name))
         self.print_photo(img_file)
 
-    def snap(self, frame):
+    def snap(self):
         """Snap a picture and save it to disk."""
-        r.set("snap", 0)
         img_name = "opencv_frame_{}.png".format(int(time.time()))
         img_file = "{}/{}".format(self.file_path, img_name)
-        cv2.imwrite(img_file, frame)
+        cv2.imwrite(img_file, self.frame)
         print("{} written!".format(img_name))
 
         self.session_captured.append(img_name)
-        r.rpush("sessionCaptured", img_name)
-        r.rpush("allCaptured", img_name)
+        self.all_captured.append(img_name)
 
         if len(self.session_captured) == self.photos_per_session:
             self.make_photo_strip()
             self.session_captured = []
-            r.delete("sessionCaptured")
 
     def clear_current(self):
         """Clear the current photo strip from the redis database"""
-        r.set("clear", 0)
-        r.delete("sessionCaptured")
         self.session_captured = []
 
     def stream(self, frame):
         """Stream the photo through redis"""
         _, image = cv2.imencode('.jpg', frame)
-        value = np.array(image).tobytes()
-        r.set('image', value)
-        image_id = os.urandom(4)
-        r.set('image_id', image_id)
+        self.live_image = np.array(image).tobytes()
+        self.live_image_id = os.urandom(4)
 
     def counter_overlay(self, frame):
-        counter_stored_value = r.get("currentCounter").decode('utf-8')
         captured_length = len(self.session_captured)
-        if int(counter_stored_value) != captured_length:
-            r.set("currentCounter", captured_length)
         counter_text = "{}/{}".format(captured_length+1,
                                       self.photos_per_session)
         cv2.putText(frame, counter_text,
@@ -150,23 +148,20 @@ class PhotoBooth():
             video_ok, frame = video_capture.read()
             if video_ok:
                 (x, y, w, h) = (0, 0, 960, 720)
-                roi = cv2.flip(frame[y:y+h, x:x+w], 1)
+                self.frame = cv2.flip(frame[y:y+h, x:x+w], 1)
 
                 k = cv2.waitKey(1)
                 if k % 256 == 27:
                     # ESC pressed
                     print("Escape hit, closing...")
                     break
-                elif k % 256 == 32 or int(r.get("snap")) == 1:
+                elif k % 256 == 32:
                     # SPACE pressed
-                    self.snap(roi)
-
-                if int(r.get("clear")) == 1:
-                    self.clear_current()
+                    self.snap()
 
                 # capture image in monochrome
-                gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-                canvas = self.detect(gray, roi)  # detect faces
+                gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
+                canvas = self.detect(gray, self.frame)  # detect faces
                 canvas = self.counter_overlay(canvas)
                 self.stream(canvas)
 

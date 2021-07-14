@@ -2,3 +2,6 @@ pycups
 opencv-python-headless
 Pillow
 redis
+fastapi
+uvicorn
+aiofiles

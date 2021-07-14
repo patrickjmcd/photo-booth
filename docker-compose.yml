@@ -1,41 +1,25 @@
 version: "3"
 
 services:
-    # camera:
-    #     build: ./camera
-    #     image: photobooth-camera
-    #     container_name: photobooth-camera
-    #     environment:
-    #         - REDIS_HOST=redis
-    #     links:
-    #         - redis
-    #     devices:
-    #         - "/dev/video0:/dev/video0"
+    camera:
+        build: ./camera
+        image: photobooth-camera
+        container_name: photobooth-camera
+        ports:
+            - 8000:8000
+        devices:
+            - "/dev/video0:/dev/video0"
 
-    web-server:
-        build: ./web
-        image: photobooth-web
-        container_name: photobooth-web
-        ports:
-            - 8000:80
-        environment:
-            - REDIS_HOST=redis
-        links:
-            - redis
-        volumes:
-            - photos:/photos
-    redis:
-        image: redis
-        ports:
-            - 6379:6379
     app:
         image: photobooth-app
         build:
             context: ./app
             # dockerfile: Dockerfile.prod
         environment:
-            - REACT_APP_API_URL=http://192.168.8.30:8000
-            - REACT_APP_WS_URL=ws://192.168.8.30:8000
+            # - REACT_APP_API_URL=http://192.168.8.30:8000
+            # - REACT_APP_WS_URL=ws://192.168.8.30:8000
+            - REACT_APP_API_URL=http://localhost:8000
+            - REACT_APP_WS_URL=ws://localhost:8000
         ports:
             - 1337:80
             - 3000:3000

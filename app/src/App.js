@@ -1,4 +1,4 @@
-import PhotoStrip from "./PhotoStrip";
+import PhotoStripCapture from "./PhotoStripCapture";
 import "./App.css";
 import LivePhoto from "./LivePhoto";
 import { useEffect, useState } from "react";
@@ -9,6 +9,8 @@ import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import Box from "@material-ui/core/Box";
 import Typography from "@material-ui/core/Typography";
+import Divider from "@material-ui/core/Divider";
+import PhotoStrips from "./PhotoStrips";
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -38,6 +40,7 @@ TabPanel.propTypes = {
 
 const App = () => {
     const [sessionPhotos, setSessionPhotos] = useState([]);
+    const [photoStrips, setPhotoStrips] = useState([]);
     const [tabValue, setTabValue] = useState(0);
 
     const handleTabChange = (event, newValue) => {
@@ -49,6 +52,7 @@ const App = () => {
             let response = await fetch(`${process.env.REACT_APP_API_URL}/data`);
             response = await response.json();
             setSessionPhotos(response.currentCapture);
+            setPhotoStrips(response.allStrips);
         } catch (e) {
             console.log(e);
         }
@@ -75,6 +79,7 @@ const App = () => {
         }
         getData();
     }, []);
+
     return (
         <div className="App">
             <AppBar position="static">
@@ -89,20 +94,24 @@ const App = () => {
             </AppBar>
             <TabPanel value={tabValue} index={0}>
                 <Grid container spacing={2}>
-                    <Grid item xs={10}>
-                        <LivePhoto
-                            getData={fetchData}
-                            clearData={clearCapture}
-                        />
+                    <Grid item md={10} xs={12}>
+                        <LivePhoto getData={fetchData} />
                         <br />
                     </Grid>
-                    <Grid item xs={2}>
-                        <PhotoStrip photos={sessionPhotos} />
+                    <Box display={{ xs: "block", sm: "none" }}>
+                        <Divider variant="middle" />
+                    </Box>
+
+                    <Grid item md={2} xs={12}>
+                        <PhotoStripCapture
+                            photos={sessionPhotos}
+                            clearData={clearCapture}
+                        />
                     </Grid>
                 </Grid>
             </TabPanel>
             <TabPanel value={tabValue} index={1}>
-                Item Two
+                <PhotoStrips photos={photoStrips} />
             </TabPanel>
         </div>
     );
