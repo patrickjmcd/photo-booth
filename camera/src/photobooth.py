@@ -1,14 +1,11 @@
 
 import cv2
 import time
-import os
 import cups
 import numpy as np
-import redis
-
 from PIL import Image
-from os import listdir
-from os.path import isfile, join
+from os import listdir, makedirs, urandom
+from os.path import isfile, join, exists
 
 
 class PhotoBooth():
@@ -23,8 +20,8 @@ class PhotoBooth():
         self.photos_per_session = photos_per_session
         self.camera = camera
 
-        if not os.path.exists(file_path):
-            os.makedirs(file_path)
+        if not exists(file_path):
+            makedirs(file_path)
 
         self.face_cascade = cv2.CascadeClassifier(
             'haarcascades/haarcascade_frontalface_default.xml')
@@ -37,6 +34,8 @@ class PhotoBooth():
             ".png") and f.startswith("opencv_frame_")]
         self.all_strips = [f for f in files_already_in_folder if f.endswith(
             ".png") and f.startswith("strip_")]
+
+        # self.backgrounds = [f for f in files_already_in_folder if f.startswith("background_")]
 
     def print_photo(self, filename):
         conn = cups.Connection()
@@ -56,21 +55,22 @@ class PhotoBooth():
         return True
 
     def detect(self, gray, frame):
+        f = frame.copy()
 
         faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
         for (x, y, w, h) in faces:
-            cv2.rectangle(frame, (x, y), ((x + w), (y + h)), (0, 255, 255), 2)
+            cv2.rectangle(f, (x, y), ((x + w), (y + h)), (0, 255, 255), 2)
             roi_gray = gray[y:y + h, x:x + w]
-            roi_color = frame[y:y + h, x:x + w]
+            roi_color = f[y:y + h, x:x + w]
             smiles = self.smile_cascade.detectMultiScale(roi_gray, 2.5, 20)
             if len(smiles) == 0:
-                cv2.putText(frame, 'SMILE!',
+                cv2.putText(f, 'SMILE!',
                             (x+10, y-10),
                             cv2.FONT_HERSHEY_SIMPLEX,
                             1,
                             (255, 255, 255),
                             2)
-        return frame
+        return f
 
     def make_photo_strip(self):
         border_x = 30  # 30 px border
@@ -124,7 +124,7 @@ class PhotoBooth():
         """Stream the photo through redis"""
         _, image = cv2.imencode('.jpg', frame)
         self.live_image = np.array(image).tobytes()
-        self.live_image_id = os.urandom(4)
+        self.live_image_id = urandom(4)
 
     def counter_overlay(self, frame):
         captured_length = len(self.session_captured)
@@ -145,10 +145,10 @@ class PhotoBooth():
 
         while True:
             # Captures video_capture frame by frame
-            video_ok, frame = video_capture.read()
+            video_ok, this_frame = video_capture.read()
             if video_ok:
                 (x, y, w, h) = (0, 0, 960, 720)
-                self.frame = cv2.flip(frame[y:y+h, x:x+w], 1)
+                self.frame = cv2.flip(this_frame[y:y+h, x:x+w], 1)
 
                 k = cv2.waitKey(1)
                 if k % 256 == 27:
@@ -162,7 +162,6 @@ class PhotoBooth():
                 # capture image in monochrome
                 gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
                 canvas = self.detect(gray, self.frame)  # detect faces
-                canvas = self.counter_overlay(canvas)
                 self.stream(canvas)
 
                 # Displays the result on camera feed
