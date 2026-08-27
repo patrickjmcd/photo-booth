@@ -1,5 +1,5 @@
 # pull official base image
-FROM node
+FROM node:20
 EXPOSE 3000
 
 # set working directory
@@ -9,8 +9,8 @@ WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 
 # install app dependencies
-COPY package.json ./
-RUN yarn
+COPY package.json yarn.lock ./
+RUN yarn --frozen-lockfile
 
 # add app
 COPY . ./

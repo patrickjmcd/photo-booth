@@ -16,7 +16,8 @@ import contextlib
 from photobooth import PhotoBooth
 
 photo_storage = os.getenv("PHOTO_STORAGE_LOCATION", "/tmp/photos")
-photobooth = PhotoBooth(file_path=photo_storage)
+printer_name = os.getenv("PRINTER_NAME", "MITSUBISHI_CP9550DW_S")
+photobooth = PhotoBooth(file_path=photo_storage, printer_name=printer_name)
 
 MAX_FPS = 100
 

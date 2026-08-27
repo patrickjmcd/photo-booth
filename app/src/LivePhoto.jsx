@@ -1,17 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import Button from "@material-ui/core/Button";
-import Card from "@material-ui/core/Card";
-import CardMedia from "@material-ui/core/CardMedia";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 function LivePhoto({ getData }) {
     const [imgSrc, setImgSrc] = useState("");
     const webSocket = useRef(null);
 
     useEffect(() => {
-        const ws_path =
-            // "ws://" + window.location.host + window.location.pathname + "ws";
-            // `ws://localhost:8000/ws`;
-            `${process.env.REACT_APP_WS_URL}/ws`;
+        const ws_path = `${import.meta.env.VITE_WS_URL}/ws`;
         webSocket.current = new WebSocket(ws_path);
         webSocket.current.onopen = () => {
             webSocket.current.send(1);
@@ -28,30 +24,22 @@ function LivePhoto({ getData }) {
     }, []);
 
     const snap = () => {
-        fetch(`${process.env.REACT_APP_API_URL}/snap`, { method: "POST" });
+        fetch(`${import.meta.env.VITE_API_URL}/snap`, { method: "POST" });
         setTimeout(() => {
             getData();
         }, 500);
     };
 
     return (
-        <div>
-            <Card>
-                <CardMedia
-                    component="img"
+        <div className="space-y-3">
+            <Card className="overflow-hidden">
+                <img
+                    src={imgSrc}
                     alt="live camera view"
-                    image={imgSrc}
-                    title="Photo Booth"
-                    style={{ "max-height": "700px", objectFit: "cover" }}
+                    className="max-h-[600px] w-full object-cover"
                 />
             </Card>
-
-            <Button
-                onClick={snap}
-                variant="contained"
-                color="primary"
-                style={{ marginTop: "10px" }}
-            >
+            <Button onClick={snap} size="lg">
                 Snap a Pic!
             </Button>
         </div>

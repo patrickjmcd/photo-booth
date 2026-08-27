@@ -10,7 +10,7 @@ from os.path import isfile, join, exists
 
 class PhotoBooth():
 
-    def __init__(self, file_path="/tmp/photo-booth", printer_name="MITSUBISHI_CP9550DZ", photos_per_session=4, camera=0):
+    def __init__(self, file_path="/tmp/photo-booth", printer_name="MITSUBISHI_CP9550DW_S", photos_per_session=4, camera=0):
 
         self.startup_time = time.time()
         self.session_captured = []
@@ -150,24 +150,12 @@ class PhotoBooth():
                 (x, y, w, h) = (0, 0, 960, 720)
                 self.frame = cv2.flip(this_frame[y:y+h, x:x+w], 1)
 
-                k = cv2.waitKey(1)
-                if k % 256 == 27:
-                    # ESC pressed
-                    print("Escape hit, closing...")
-                    break
-                elif k % 256 == 32:
-                    # SPACE pressed
-                    self.snap()
-
                 # capture image in monochrome
                 gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
                 canvas = self.detect(gray, self.frame)  # detect faces
                 self.stream(canvas)
-
-                # Displays the result on camera feed
-                # cv2.imshow('Photo Booth', canvas)
             else:
                 print("camera not ready")
+                sleep(1)
         # Release the capture once all the processing is done.
         video_capture.release()
-        cv2.destroyAllWindows()
