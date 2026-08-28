@@ -1,0 +1,18 @@
+(proxy_routes) {
+    @camera_api path /ws /snap /upload-snap /data /clear /reprint /images/*
+    reverse_proxy @camera_api camera:8000
+
+    reverse_proxy app:3000
+}
+
+{$TAILSCALE_HOSTNAME} {
+    tls /certs/{$TAILSCALE_HOSTNAME}.crt /certs/{$TAILSCALE_HOSTNAME}.key
+    import proxy_routes
+}
+
+{$PUBLIC_HOSTNAME} {
+    tls {
+        dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+    }
+    import proxy_routes
+}

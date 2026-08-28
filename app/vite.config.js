@@ -15,5 +15,8 @@ export default defineConfig({
     server: {
         host: "0.0.0.0",
         port: 3000,
+        allowedHosts: [process.env.TAILSCALE_HOSTNAME, process.env.PUBLIC_HOSTNAME].filter(
+            Boolean
+        ),
     },
 });

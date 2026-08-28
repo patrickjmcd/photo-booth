@@ -41,8 +41,11 @@ class PhotoBooth():
         conn = cups.Connection()
         printers = conn.getPrinters()
         if self.printer_name in printers.keys():
+            # w288h432-div2 ("2x6*2" in the Gutenprint PPD) prints a 4x6" sheet
+            # and has the printer's cutter slice it into two 2x6" strips.
             print_id = conn.printFile(self.printer_name,
-                                      filename, "Photo Booth", {})
+                                      filename, "Photo Booth",
+                                      {"PageSize": "w288h432-div2"})
             while conn.getJobs().get(print_id, None):
                 time.sleep(1)
         else:
@@ -72,12 +75,30 @@ class PhotoBooth():
                             2)
         return f
 
+    def _crop_to_aspect(self, image, target_w, target_h):
+        """Center-crop image to target_w:target_h so resizing won't stretch it."""
+        h, w = image.shape[:2]
+        target_ratio = target_w / target_h
+        current_ratio = w / h
+        if current_ratio > target_ratio:
+            new_w = round(h * target_ratio)
+            x0 = (w - new_w) // 2
+            return image[:, x0:x0 + new_w]
+        elif current_ratio < target_ratio:
+            new_h = round(w / target_ratio)
+            y0 = (h - new_h) // 2
+            return image[y0:y0 + new_h, :]
+        return image
+
     def make_photo_strip(self):
-        border_x = 30  # 30 px border
-        border_y = 30
-        margin_y = 10
-        width = 540
-        height = 405
+        # Template.png is 400x1200px (2x6" @ 200dpi) so that hconcat below
+        # produces an 800x1200px (4x6") image matching the printer's
+        # w288h432-div2 cut mode.
+        border_x = 20
+        border_y = 48  # matches the bottom margin left after 4 photos + gaps
+        margin_y = 8
+        width = 360
+        height = 270
 
         template_image = cv2.imread("Template.png")
         for i in range(0, len(self.session_captured)):
@@ -103,10 +124,22 @@ class PhotoBooth():
         self.print_photo(img_file)
 
     def snap(self):
-        """Snap a picture and save it to disk."""
+        """Snap a picture from the booth camera and save it to disk."""
+        self._save_frame(self.frame)
+
+    def snap_uploaded(self, image_bytes):
+        """Save a photo captured on a client device's own camera."""
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        self._save_frame(frame)
+
+    def _save_frame(self, frame):
+        # Crop to the strip's 4:3 target here so saved photos (and their
+        # thumbnails) already reflect what will end up in the printed strip.
+        frame = self._crop_to_aspect(frame, 4, 3)
         img_name = "opencv_frame_{}.png".format(int(time.time()))
         img_file = "{}/{}".format(self.file_path, img_name)
-        cv2.imwrite(img_file, self.frame)
+        cv2.imwrite(img_file, frame)
         print("{} written!".format(img_name))
 
         self.session_captured.append(img_name)

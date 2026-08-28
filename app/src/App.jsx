@@ -10,7 +10,7 @@ const App = () => {
 
     const fetchData = async () => {
         try {
-            let response = await fetch(`${import.meta.env.VITE_API_URL}/data`);
+            let response = await fetch("/data");
             response = await response.json();
             setSessionPhotos(response.currentCapture);
             setPhotoStrips(response.allStrips);
@@ -21,7 +21,7 @@ const App = () => {
 
     const clearCapture = async () => {
         try {
-            fetch(`${import.meta.env.VITE_API_URL}/clear`, { method: "POST" });
+            fetch("/clear", { method: "POST" });
             setTimeout(() => {
                 fetchData();
             }, 500);

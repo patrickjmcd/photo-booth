@@ -36,6 +36,14 @@ async def snap(request):
     return JSONResponse({"snap": 1})
 
 
+async def upload_snap(request):
+    jsonbody = await request.json()
+    # data URLs look like "data:image/png;base64,...."
+    image_data = jsonbody['image'].split(',')[-1]
+    photobooth.snap_uploaded(base64.b64decode(image_data))
+    return JSONResponse({"snap": 1})
+
+
 async def clear_current_capture(request):
     photobooth.clear_current()
     return JSONResponse({"clear": 1})
@@ -73,6 +81,7 @@ app = Starlette(debug=True, routes=[
 
     WebSocketRoute('/ws', websocket_endpoint),
     Route('/snap', snap, methods=['POST']),
+    Route('/upload-snap', upload_snap, methods=['POST']),
     Route('/data', data),
     Route('/clear', clear_current_capture, methods=['POST']),
     Route('/reprint', reprint_strip, methods=['POST']),

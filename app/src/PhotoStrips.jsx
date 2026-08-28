@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const reprintStrip = (filename) => {
-    fetch(`${import.meta.env.VITE_API_URL}/reprint`, {
+    fetch("/reprint", {
         method: "POST",
         body: JSON.stringify({ filename }),
     });
@@ -22,7 +22,7 @@ const PhotoStrips = ({ photos }) => {
     const photoImages = photos.map((p) => (
         <Card key={p} className="overflow-hidden">
             <img
-                src={`${import.meta.env.VITE_API_URL}/images/${p}`}
+                src={`/images/${p}`}
                 alt="photobooth pic"
                 className="w-full cursor-pointer"
                 onClick={() => handleOpen(p)}
@@ -45,7 +45,7 @@ const PhotoStrips = ({ photos }) => {
                 <DialogContent>
                     <Card className="overflow-hidden">
                         <img
-                            src={`${import.meta.env.VITE_API_URL}/images/${modalImage}`}
+                            src={`/images/${modalImage}`}
                             alt="photobooth pic"
                             className="max-h-[400px] w-full object-contain"
                         />
