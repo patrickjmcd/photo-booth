@@ -17,7 +17,7 @@ const PhotoStripCapture = ({ photos, clearData }) => {
                     p ? (
                         <div
                             key={p}
-                            className="aspect-[4/3] overflow-hidden rounded-sm border border-neutral-200"
+                            className="aspect-4/3 overflow-hidden rounded-sm border border-neutral-200"
                         >
                             <img
                                 src={`/images/${p}`}
@@ -28,7 +28,7 @@ const PhotoStripCapture = ({ photos, clearData }) => {
                     ) : (
                         <div
                             key={i}
-                            className="aspect-[4/3] rounded-sm border border-dashed border-neutral-300 bg-neutral-50"
+                            className="aspect-4/3 rounded-sm border border-dashed border-neutral-300 bg-neutral-50"
                         />
                     )
                 )}
