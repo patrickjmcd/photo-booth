@@ -125,7 +125,7 @@ function LivePhoto({ getData }) {
 
             {/* 4:3 matches the server's strip-crop target (360x270), so this
                 preview crops the same region that ends up in the print. */}
-            <Card className="relative aspect-[4/3] w-full overflow-hidden">
+            <Card className="relative aspect-4/3 w-full overflow-hidden">
                 {useLocalCamera ? (
                     <video
                         ref={videoRef}
