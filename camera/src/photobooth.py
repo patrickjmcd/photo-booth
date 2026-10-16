@@ -189,6 +189,6 @@ class PhotoBooth():
                 self.stream(canvas)
             else:
                 print("camera not ready")
-                sleep(1)
+                time.sleep(1)
         # Release the capture once all the processing is done.
         video_capture.release()
