@@ -1,5 +1,5 @@
 pycups
-opencv-python-headless==4.14.0.94
+opencv-contrib-python-headless==5.0.0.93
 Pillow
 fastapi
 uvicorn
